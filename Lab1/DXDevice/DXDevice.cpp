@@ -3,9 +3,9 @@
 
 DXDevice::DXDevice() {
 	UINT creationFlags = 0;
-	#if defined(_DEBUG)
-		creationFlags = D3D11_CREATE_DEVICE_DEBUG;
-	#endif
+#if defined(_DEBUG)
+	creationFlags = D3D11_CREATE_DEVICE_DEBUG;
+#endif
 	D3D_DRIVER_TYPE driverTypes[] =
 	{
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -39,9 +39,9 @@ DXDevice::DXDevice() {
 	initializeDxgi();
 }
 
-DXSwapChain* DXDevice::getSwapChain(Window* window) {
+DXSwapChain* DXDevice::getSwapChain(Window* window, const char* possibleName) {
 	if (!swapChains.count(window)) {
-		swapChains[window] = createSwapChain(window);
+		swapChains[window] = createSwapChain(window, possibleName);
 	}
 	return swapChains[window];
 }
@@ -51,7 +51,7 @@ ID3D11Device* DXDevice::getDevice() {
 }
 
 
-DXSwapChain* DXDevice::createSwapChain(Window* window) {
+DXSwapChain* DXDevice::createSwapChain(Window* window, const char* possibleName) {
 	DXGI_SWAP_CHAIN_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.BufferCount = DX_SWAPCHAIN_DEFAULT_BUFFER_AMOUNT;
@@ -70,13 +70,13 @@ DXSwapChain* DXDevice::createSwapChain(Window* window) {
 	if (FAILED(dxgiFactory->CreateSwapChain(device, &desc, &swapChain))) {
 		throw std::runtime_error("Failed to create swapChain");
 	}
-	return new DXSwapChain(dxgiFactory, swapChain, device, window->getWindowHandle(), window->getWidth(), window->getHeight());
+	return new DXSwapChain(dxgiFactory, swapChain, device, window->getWindowHandle(), window->getWidth(), window->getHeight(), possibleName);
 }
 
 void DXDevice::initializeDxgi() {
 	if (FAILED(device->QueryInterface(IID_PPV_ARGS(&dxgiDevice))))
 		throw std::runtime_error("Failed to query dxgi device");
-	
+
 	if (FAILED(dxgiDevice->GetParent(IID_PPV_ARGS(&dxgiAdapter))))
 		throw std::runtime_error("Failed to query dxgi adapter");
 	if (FAILED(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory))))
